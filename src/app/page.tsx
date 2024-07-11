@@ -13,7 +13,7 @@ export default function Home() {
   useEffect(() => {
     // Initialize Peer with Render-hosted server details
     peer.current = new Peer({
-      host: "https://peerserver-66mv.onrender.com", // Replace with your Render host URL
+      host: "peerserver-66mv.onrender.com", // Replace with your Render host URL
       port: 443, // Render uses HTTPS, typically on port 443
       path: "/peerjs",
       secure: true, // Make sure to use secure connection
