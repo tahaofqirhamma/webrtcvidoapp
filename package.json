@@ -9,11 +9,15 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "codemirror": "^6.0.1",
     "next": "14.2.5",
     "peerjs": "^1.5.4",
     "react": "^18",
     "react-dom": "^18",
-    "simple-peer": "^9.11.1"
+    "simple-peer": "^9.11.1",
+    "y-codemirror": "^3.0.1",
+    "y-websocket": "^2.0.3",
+    "yjs": "^13.6.18"
   },
   "devDependencies": {
     "@types/node": "^20",

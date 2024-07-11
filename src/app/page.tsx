@@ -13,7 +13,7 @@ export default function Home() {
   useEffect(() => {
     // Initialize Peer with Render-hosted server details
     peer.current = new Peer({
-      host: "peerserver-66mv.onrender.com", // Replace with your Render host URL
+      host: "https://peerserver-66mv.onrender.com", // Replace with your Render host URL
       port: 443, // Render uses HTTPS, typically on port 443
       path: "/peerjs",
       secure: true, // Make sure to use secure connection
@@ -52,6 +52,7 @@ export default function Home() {
             call.on("stream", (remoteStream: MediaStream) => {
               const video = document.createElement("video");
               video.srcObject = remoteStream;
+              video.className = "rounded-lg shadow-md";
               video.play();
               document.body.append(video);
             });
