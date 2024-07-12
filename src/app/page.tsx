@@ -9,15 +9,14 @@ export default function Home() {
   const searchParams = useSearchParams();
   const peerId = searchParams.get("id");
   const [myPeerId, setMyPeerId] = useState<string | null>(null);
-  const [remoteVideo, setRemoteVideo] = useState<HTMLVideoElement | null>(null);
 
   useEffect(() => {
     // Initialize Peer with Render-hosted server details
     peer.current = new Peer({
-      host: "peerserver-66mv.onrender.com",
-      port: 443,
+      host: "peerserver-66mv.onrender.com", // Corrected host URL
+      port: 443, // Render uses HTTPS, typically on port 443
       path: "/peerjs",
-      secure: true,
+      secure: true, // Ensure secure connection
     });
 
     peer.current.on("open", (id: string) => {
@@ -36,15 +35,10 @@ export default function Home() {
         if (peerId && peer.current) {
           const call = peer.current.call(peerId, stream);
           call.on("stream", (remoteStream: MediaStream) => {
-            if (!remoteVideo) {
-              const video = document.createElement("video");
-              video.srcObject = remoteStream;
-              video.className = "rounded-lg shadow-md";
-              video.controls = true;
-              video.play();
-              document.body.append(video);
-              setRemoteVideo(video);
-            }
+            const video = document.createElement("video");
+            video.srcObject = remoteStream;
+            video.play();
+            document.body.append(video);
           });
         }
       });
@@ -56,15 +50,11 @@ export default function Home() {
           .then((stream) => {
             call.answer(stream);
             call.on("stream", (remoteStream: MediaStream) => {
-              if (!remoteVideo) {
-                const video = document.createElement("video");
-                video.srcObject = remoteStream;
-                video.className = "rounded-lg shadow-md";
-                video.controls = true;
-                video.play();
-                document.body.append(video);
-                setRemoteVideo(video);
-              }
+              const video = document.createElement("video");
+              video.srcObject = remoteStream;
+              video.className = "rounded-lg shadow-md";
+              video.play();
+              document.body.append(video);
             });
           });
       });
@@ -75,11 +65,8 @@ export default function Home() {
       if (peer.current) {
         peer.current.destroy();
       }
-      if (remoteVideo) {
-        remoteVideo.remove();
-      }
     };
-  }, [peerId, remoteVideo]);
+  }, [peerId]);
 
   const generateLink = () => {
     if (myPeerId) {
@@ -92,14 +79,9 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col items-center">
-      <video ref={myVideo} muted className="rounded-lg shadow-md mb-4" />
-      <button
-        onClick={generateLink}
-        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-      >
-        Generate Call Link
-      </button>
+    <div>
+      <video ref={myVideo} muted />
+      <button onClick={generateLink}>Generate Call Link</button>
     </div>
   );
 }
