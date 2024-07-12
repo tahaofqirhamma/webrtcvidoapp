@@ -2,7 +2,6 @@
 import { useEffect, useRef, useState } from "react";
 import Peer, { MediaConnection } from "peerjs";
 import { useSearchParams } from "next/navigation";
-import "tailwindcss/tailwind.css";
 
 export default function Home() {
   const myVideo = useRef<HTMLVideoElement | null>(null);
