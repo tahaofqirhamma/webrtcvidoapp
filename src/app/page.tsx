@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import Peer, { MediaConnection } from "peerjs";
+import Peer, { DataConnection, MediaConnection } from "peerjs";
 import { useSearchParams } from "next/navigation";
 
 export default function Home() {
@@ -10,17 +10,21 @@ export default function Home() {
   const peerId = searchParams.get("id");
   const [myPeerId, setMyPeerId] = useState<string | null>(null);
   const [call, setCall] = useState<MediaConnection | null>(null);
+  const [dataConnection, setDataConnection] = useState<DataConnection | null>(
+    null
+  );
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const [isAudioMuted, setIsAudioMuted] = useState(false);
   const [isVideoPaused, setIsVideoPaused] = useState(false);
+  const [messages, setMessages] = useState<string[]>([]);
+  const [newMessage, setNewMessage] = useState("");
 
   useEffect(() => {
-    // Initialize Peer with Render-hosted server details
     peer.current = new Peer({
-      host: "peerserver-66mv.onrender.com", // Corrected host URL
-      port: 443, // Render uses HTTPS, typically on port 443
+      host: "peerserver-66mv.onrender.com",
+      port: 443,
       path: "/peerjs",
-      secure: true, // Ensure secure connection
+      secure: true,
     });
 
     peer.current.on("open", (id: string) => {
@@ -39,12 +43,22 @@ export default function Home() {
 
         if (peerId && peer.current) {
           const newCall = peer.current.call(peerId, stream);
+          const dataConn = peer.current.connect(peerId);
           setCall(newCall);
+          setDataConnection(dataConn);
+
           newCall.on("stream", (remoteStream: MediaStream) => {
             const video = document.createElement("video");
             video.srcObject = remoteStream;
             video.play();
             document.body.append(video);
+          });
+
+          dataConn.on("data", (data: unknown) => {
+            if (typeof data === "string") {
+              setMessages((prevMessages) => [...prevMessages, data]);
+              console.log(messages);
+            }
           });
         }
       });
@@ -65,14 +79,21 @@ export default function Home() {
             });
           });
       });
+
+      peer.current.on("connection", (conn: DataConnection) => {
+        setDataConnection(conn);
+        conn.on("data", (data: unknown) => {
+          if (typeof data === "string") {
+            setMessages((prevMessages) => [...prevMessages, data]);
+          }
+        });
+      });
     }
 
     return () => {
-      // Clean up PeerJS connection on component unmount
       if (peer.current) {
         peer.current.destroy();
       }
-      // Stop all media tracks on component unmount
       if (localStream) {
         localStream.getTracks().forEach((track) => track.stop());
       }
@@ -111,12 +132,23 @@ export default function Home() {
     if (call) {
       call.close();
     }
+    if (dataConnection) {
+      dataConnection.close();
+    }
     if (peer.current) {
       peer.current.destroy();
     }
-    // Stop all media tracks
     if (localStream) {
       localStream.getTracks().forEach((track) => track.stop());
+    }
+  };
+
+  const sendMessage = () => {
+    if (newMessage.trim() !== "" && dataConnection) {
+      dataConnection.send(newMessage);
+      setMessages((prevMessages) => [...prevMessages, newMessage]);
+      console.log(newMessage);
+      setNewMessage("");
     }
   };
 
@@ -147,6 +179,29 @@ export default function Home() {
           className="px-4 py-2 bg-yellow-500 text-white rounded-lg shadow-md"
         >
           Generate Call Link
+        </button>
+      </div>
+      <div className="mt-4 w-full max-w-md">
+        <h2 className="text-lg font-bold mb-2">Chat</h2>
+        <div className="bg-white rounded-lg shadow-md p-4 h-64 overflow-y-scroll">
+          {messages.map((msg, index) => (
+            <p key={index} className="mb-2">
+              {msg}
+            </p>
+          ))}
+        </div>
+        <input
+          type="text"
+          value={newMessage}
+          onChange={(e) => setNewMessage(e.target.value)}
+          className="w-full text-black mt-2 px-4 py-2 border rounded-lg"
+          placeholder="Type a message..."
+        />
+        <button
+          onClick={sendMessage}
+          className="mt-2 w-full px-4 py-2 bg-blue-500 text-white rounded-lg shadow-md"
+        >
+          Send
         </button>
       </div>
     </div>
